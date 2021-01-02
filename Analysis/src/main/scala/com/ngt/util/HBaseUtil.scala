@@ -14,6 +14,7 @@ import scala.collection.JavaConverters.asScalaBufferConverter
  * @author ngt
  * @create 2021-01-03 1:52
  * 用于Flink 向 Hbase 中读写实时站点客流信息
+ * https://www.bbsmax.com/A/obzbMwK3dE/
  */
 object HBaseUtil {
 
