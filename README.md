@@ -72,6 +72,10 @@
 
 [^1]: https://www.loholiday.com/2018/03/12/%E6%B7%B1%E5%9C%B3%E5%9C%B0%E9%90%B5%E8%B7%AF%E7%B7%9A%E5%9C%962018%E5%B9%B4%E6%9C%80%E6%96%B0%E7%89%88%E6%9C%AC-%E5%87%BA%E7%99%BC%E5%89%8D%E4%B8%80%E5%AE%9A%E8%A6%81save%E4%BD%8E%EF%BC%81/
 
+
+
+![](image/系统架构v1.0.svg)
+
 ## 2 客流量相关统计
 
 有关使用 Elasticsearch + Kibana实现数据可视化的具体细节，请参考本人另一个项目的 [**Kibana数据可视化步骤**](https://github.com/kailanyue/BitcoinPrice#4-kibana%E6%95%B0%E6%8D%AE%E5%8F%AF%E8%A7%86%E5%8C%96%E6%AD%A5%E9%AA%A4) 部分
