@@ -1,7 +1,8 @@
 package com.ngt.traffic
 
 import com.ngt.data_processing.SZTAgg
-import com.ngt.util.DrivingRange.{RangeCountAgg, RangeWindowResult, TopNRange}
+import com.ngt.util.DrivingRange.{RangeCountAgg, RangeWindowResult, TopNRangeHbase}
+import com.ngt.util.HBaseUtil.HBaseWriter
 import com.ngt.util.Range
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
@@ -10,8 +11,9 @@ import org.apache.flink.streaming.api.windowing.time.Time
 /**
  * @author ngt
  * @create 2020-12-27 0:15
+ * 将不同乘车区间客流写入 Hbase
  */
-object TopDrivingRange {
+object HBaseWriterDrivingRange {
   def main(args: Array[String]): Unit = {
     val env: StreamExecutionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(1)
@@ -37,9 +39,13 @@ object TopDrivingRange {
 
     val resultStream: DataStream[String] = aggStream
       .keyBy(_.windowEnd)
-      .process(new TopNRange(10))
+      .process(new TopNRangeHbase)
 
-    resultStream.print()
+    /*
+      将不同乘车区间实时客流数据写入 Hbase
+      在 Hbase shell 中使用命令 ：create 'DrivingRange', {NAME => 'traffic'}  创建表
+     */
+    resultStream.addSink(new HBaseWriter("DrivingRange","traffic"))
     env.execute()
   }
 }

@@ -9,6 +9,7 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 import org.apache.flink.util.Collector
 
 import java.sql.Timestamp
+import java.text.{DecimalFormat, SimpleDateFormat}
 import java.util
 import java.util.concurrent.TimeUnit
 import scala.collection.mutable.ListBuffer
@@ -49,6 +50,7 @@ object TopTraffic {
       ctx.timerService().registerEventTimeTimer(value.windowEnd + 1)
     }
 
+    // 用于本地打印输出，仅作调试时使用
     override def onTimer(timestamp: Long, ctx: KeyedProcessFunction[Long, StationTop, String]#OnTimerContext, out: Collector[String]): Unit = {
       val passengersCounts: ListBuffer[StationTop] = ListBuffer()
       val iter: util.Iterator[StationTop] = passengersCountListState.get().iterator()
@@ -73,6 +75,41 @@ object TopTraffic {
       result.append("=================================================\n")
       TimeUnit.MICROSECONDS.sleep(100)
       out.collect(result.toString())
+    }
+  }
+
+  // 将客流量最多的站点写入到 Hbase
+  class TopNStationHbase() extends KeyedProcessFunction[Long, StationTop, String] {
+    lazy val passengersCountListState = getRuntimeContext.getListState(new ListStateDescriptor[StationTop]("itemViewCount-list", classOf[StationTop]))
+
+    override def processElement(value: StationTop, ctx: KeyedProcessFunction[Long, StationTop, String]#Context, out: Collector[String]): Unit = {
+      passengersCountListState.add(value)
+      ctx.timerService().registerEventTimeTimer(value.windowEnd + 1)
+    }
+
+    override def onTimer(timestamp: Long, ctx: KeyedProcessFunction[Long, StationTop, String]#OnTimerContext, out: Collector[String]): Unit = {
+      val passengersCounts: ListBuffer[StationTop] = ListBuffer()
+      val iter: util.Iterator[StationTop] = passengersCountListState.get().iterator()
+
+      while (iter.hasNext) {
+        passengersCounts += iter.next()
+      }
+      passengersCountListState.clear()
+
+      // 数值格式化
+      val format = new DecimalFormat("0000")
+
+      val sortedpassengersCounts: ListBuffer[StationTop] = passengersCounts.sortBy(_.count)(Ordering.Long.reverse)
+      val result: StringBuilder = new StringBuilder
+      for (i <- sortedpassengersCounts.indices) {
+        val currentItemViewCount = sortedpassengersCounts(i)
+        result.append(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(timestamp - 1)).append(" ")
+          .append(format.format(i + 1)) // 数字格式化保证 Hbase rowkey 的字典顺序
+          .append(",").append(currentItemViewCount.station)
+          .append(",").append(currentItemViewCount.count)
+        out.collect(result.toString())
+        result.clear()
+      }
     }
   }
 

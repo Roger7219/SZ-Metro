@@ -9,6 +9,7 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow
 import org.apache.flink.util.Collector
 
 import java.sql.Timestamp
+import java.text.{DecimalFormat, SimpleDateFormat}
 import java.util
 import java.util.concurrent.TimeUnit
 import scala.collection.mutable.ListBuffer
@@ -17,7 +18,7 @@ import scala.collection.mutable.ListBuffer
  * @author ngt
  * @create 2020-12-27 0:48
  */
-case class Range(station: String, windowEnd: Long, count: Long)
+case class Range(stationRange: String, windowEnd: Long, count: Long)
 
 //(station: String, windowEnd: Long, count: Long)
 object DrivingRange {
@@ -42,6 +43,7 @@ object DrivingRange {
     }
   }
 
+  // 本地调试所用
   class TopNRange(topSize: Int) extends KeyedProcessFunction[Long, Range, String] {
 
     lazy val passengersCountListState = getRuntimeContext.getListState(new ListStateDescriptor[Range]("itemViewCount-list", classOf[Range]))
@@ -68,7 +70,7 @@ object DrivingRange {
       for (i <- sortedpassengersCounts.indices) {
         val currentItemViewCount = sortedpassengersCounts(i)
         result.append("NO").append(i + 1).append(": \t")
-          .append("区间 : ").append(currentItemViewCount.station).append("\t\t")
+          .append("区间 : ").append(currentItemViewCount.stationRange).append("\t\t")
           .append("客流量 : ").append(currentItemViewCount.count).append("\n")
       }
       result.append("=================================================\n")
@@ -77,4 +79,41 @@ object DrivingRange {
     }
   }
 
+
+  // 将客流量最多的站点写入到 Hbase
+  class TopNRangeHbase() extends KeyedProcessFunction[Long, Range, String] {
+
+    lazy val passengersCountListState = getRuntimeContext.getListState(new ListStateDescriptor[Range]("itemViewCount-list", classOf[Range]))
+
+    override def processElement(value: Range, ctx: KeyedProcessFunction[Long, Range, String]#Context, out: Collector[String]): Unit = {
+      passengersCountListState.add(value)
+      ctx.timerService().registerEventTimeTimer(value.windowEnd + 1)
+    }
+
+    override def onTimer(timestamp: Long, ctx: KeyedProcessFunction[Long, Range, String]#OnTimerContext, out: Collector[String]): Unit = {
+      val passengersCounts: ListBuffer[Range] = ListBuffer()
+      val iter: util.Iterator[Range] = passengersCountListState.get().iterator()
+
+      while (iter.hasNext) {
+        passengersCounts += iter.next()
+      }
+      passengersCountListState.clear()
+      val sortedpassengersCounts: ListBuffer[Range] = passengersCounts.sortBy(_.count)(Ordering.Long.reverse)
+      val result: StringBuilder = new StringBuilder
+
+      // 数值格式化
+      val format = new DecimalFormat("000")
+
+      for (i <- sortedpassengersCounts.indices) {
+        val currentItemViewCount = sortedpassengersCounts(i)
+        result.append(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(timestamp - 1)).append(" ")
+          .append(format.format(i + 1)) // 数字格式化保证 Hbase rowkey 的字典顺序
+          .append(",").append(currentItemViewCount.stationRange)
+          .append(",").append(currentItemViewCount.count)
+        out.collect(result.toString())
+        result.clear()
+      }
+
+    }
+  }
 }
