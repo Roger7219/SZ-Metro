@@ -18,6 +18,14 @@ import scala.collection.JavaConverters.asScalaBufferConverter
  */
 object HBaseUtil {
 
+  // 配置集群信息
+  val config: org.apache.hadoop.conf.Configuration = HBaseConfiguration.create()
+
+  config.set(HConstants.ZOOKEEPER_QUORUM, "192.168.100.102,192.168.100.103,192.168.100.104")
+  config.set(HConstants.ZOOKEEPER_CLIENT_PORT, "2181")
+  config.setInt(HConstants.HBASE_CLIENT_OPERATION_TIMEOUT, 30000)
+  config.setInt(HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD, 30000)
+
   /**
    *
    * @param tablename   表名
@@ -36,11 +44,11 @@ object HBaseUtil {
      * @param parameters
      */
     override def open(parameters: Configuration): Unit = {
-      val config: org.apache.hadoop.conf.Configuration = HBaseConfiguration.create
-      config.set(HConstants.ZOOKEEPER_QUORUM, "192.168.100.102,192.168.100.103,192.168.100.104")
-      config.set(HConstants.ZOOKEEPER_CLIENT_PORT, "2181")
-      config.setInt(HConstants.HBASE_CLIENT_OPERATION_TIMEOUT, 30000)
-      config.setInt(HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD, 30000)
+//      val config: org.apache.hadoop.conf.Configuration = HBaseConfiguration.create
+//      config.set(HConstants.ZOOKEEPER_QUORUM, "192.168.100.102,192.168.100.103,192.168.100.104")
+//      config.set(HConstants.ZOOKEEPER_CLIENT_PORT, "2181")
+//      config.setInt(HConstants.HBASE_CLIENT_OPERATION_TIMEOUT, 30000)
+//      config.setInt(HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD, 30000)
       conn = ConnectionFactory.createConnection(config)
 
       val tableName: TableName = TableName.valueOf(tablename)
@@ -89,6 +97,8 @@ object HBaseUtil {
    * @param withStopRow  终止Row，取不到
    */
 
+
+
   class HBaseReader(tablename:String, familyname:String,withStartRow:String, withStopRow:String) extends RichSourceFunction[(String, String)] {
 
     private var conn: Connection = null
@@ -101,12 +111,7 @@ object HBaseUtil {
      * @param parameters
      */
     override def open(parameters: Configuration): Unit = {
-      val config: org.apache.hadoop.conf.Configuration = HBaseConfiguration.create()
 
-      config.set(HConstants.ZOOKEEPER_QUORUM, "192.168.100.102,192.168.100.103,192.168.100.104")
-      config.set(HConstants.ZOOKEEPER_CLIENT_PORT, "2181")
-      config.setInt(HConstants.HBASE_CLIENT_OPERATION_TIMEOUT, 30000)
-      config.setInt(HConstants.HBASE_CLIENT_SCANNER_TIMEOUT_PERIOD, 30000)
 
       val tableName: TableName = TableName.valueOf(tablename)
       val cf1: String = familyname
