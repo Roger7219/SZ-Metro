@@ -4,6 +4,7 @@ import com.ngt.data_processing.SZT
 import com.ngt.util.HBaseUtil.HBaseWriter
 import com.ngt.util.StationTop
 import com.ngt.util.TopTraffic.{StationWindowResult, TopNStationHbase, TrafficCountAgg}
+import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.api.windowing.time.Time
