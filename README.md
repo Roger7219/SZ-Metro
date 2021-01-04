@@ -424,23 +424,25 @@
 
 1. 首先在 Hbase shell 中使用以下命令建立存储表
 
-   ```
-   create 'StationTraffic', {NAME => 'traffic'}
-   ```
+```
+create 'StationTraffic', {NAME => 'traffic'}
+```
 
 2. 执行 `com.ngt.traffic.HBaseWriterStationTraffic` 将站点的客流信息写入 Hbase 中
-	- 使用当前 **时间加客流排名** 作为数据的 Rowkey
+	
+- 使用当前 **时间加客流排名** 作为数据的 Rowkey
 
-    ```sh
-    # 时间         客流排名
+```sh
+# 时间         客流排名
 2018-09-01 11:30 001      column=traffic:count, timestamp=1609614078234, value=117                   
-   2018-09-01 11:30 001      column=traffic:name, timestamp=1609614078234,value=\xE8\x80\x81\xE8\xA1\x97 
-    ```
-	- 代码中统计的是，过去五分钟的客流量信息，每一分钟滚动一次
+2018-09-01 11:30 001      column=traffic:name, timestamp=1609614078234,value=\xE8\x80\x81\xE8\xA1\x97 
+```
 
-    ```scala
-    .timeWindow(Time.minutes(5), Time.minutes(1))
-    ```
+- 代码中统计的是，过去五分钟的客流量信息，每一分钟滚动一次
+
+```scala
+.timeWindow(Time.minutes(5), Time.minutes(1))
+```
 
 3.  使用 Hbase  shell 命令 `scan StationTraffic` 查询写入情况
 
