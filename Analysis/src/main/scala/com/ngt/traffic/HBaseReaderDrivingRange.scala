@@ -6,7 +6,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
 
 /**
  * @author ngt
- * @create 2021-01-03 4:04
+ * @create 2021-01-03 14:04
  */
 
 case class DrivingRange(time: String, rank: String, range: String, count: String)
