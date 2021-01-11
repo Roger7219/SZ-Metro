@@ -554,6 +554,6 @@ dataStream2.map(x => {
   - 使用 Flink 完成数据清洗
   - 使用 Kafka 消息队列传输数据
   - 存入 Elasticsearch，使用全文检索实现实时搜索，kibana 可视化展示
-  - 使用 Flink 完成实时客流的统计和计算
+  - 使用 Flink 完成实时线路站点乘车区间的客流的统计和计算
 - v0.2
   - 将实时计算的结果保存到HBase中，便于后面的程序使用。
