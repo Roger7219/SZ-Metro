@@ -1,4 +1,3 @@
-/SZ-Metro.iml
 /ETL/target/
 /Analysis/target/
 /.idea/
@@ -9,3 +8,6 @@
 /TrafficData/
 /~$系统架构.pptx
 /系统架构.pptx
+/SZ-Metro.iml
+/ETL/ETL.iml
+/Analysis/Analysis.iml
