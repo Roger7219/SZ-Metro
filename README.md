@@ -1,6 +1,6 @@
 # 深圳地铁大数据客流分析系统
 
-如果图片不能正常显示请移步码云地址：https://gitee.com/nanguatou9/SZ-Metro
+如果图片不能正常显示请移步码云地址：https://gitee.com/kailanyue/SZ-Metro
 
 
 
